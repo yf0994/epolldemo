@@ -61,19 +61,17 @@ int Socket::socketListen()const{
 }
 
 int Socket::socketAccept(){
-	int clientfd;
 	struct sockaddr_in clientaddr;
 	socklen_t clientaddrlen = sizeof(clientaddr);
-	clientfd = accept(fd_, (struct sockaddr*)&clientaddr, &clientaddrlen);
-	if(clientfd == -1){
+	clientfd_ = accept(fd_, (struct sockaddr*)&clientaddr, &clientaddrlen);
+	if(clientfd_ == -1){
 		fprintf(stderr, "accept client socket fail!\n");
 		return -1;
 	}
 
 	cout<<"Accept a new client:"<<inet_ntoa(clientaddr.sin_addr)<<':'<<clientaddr.sin_port<<endl;
-	clients_.push_back(clientfd);
-	clientfd_ = clientfd;
-	return clientfd;
+//	clients_.push_back(clientfd_);
+	return clientfd_;
 }
 
 int Socket::socketConnect() const{

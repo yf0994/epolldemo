@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <stdio.h>
 #include <string.h>
 
 #include "epoll.h"
@@ -37,10 +37,9 @@ void Epoll::handle_events(Socket& socket, char* buf){
 
 void Epoll::do_accept(Socket& socket){
 	int clientfd;
-	if(socket.socketAccept() == -1){
+	if((clientfd = socket.socketAccept()) == -1){
 		return;
 	}
-	clientfd = socket.getClientFd();
 	add_event(clientfd, EPOLLIN);
 }
 
@@ -50,12 +49,12 @@ void Epoll::do_read(int fd, char* buf){
 	nread = read(fd, buf, size);
 	if(nread == 0){
 		fprintf(stderr, "Client close!\n");
-		close(fd);
 		delete_event(fd, EPOLLIN);
+		close(fd);
 	} else if(nread == -1){
 		fprintf(stderr, "read fail!\n");
-		close(fd);
 		delete_event(fd, EPOLLIN);
+		close(fd);
 	} else {
 		cout<<"read message is:"<<buf;
 		modify_event(fd, EPOLLOUT);
@@ -67,8 +66,8 @@ void Epoll::do_write(int fd, char* buf){
 	nwrite = write(fd, buf, strlen(buf));
 	if(nwrite == -1){
 		fprintf(stderr, "write fail!");
-		close(nwrite);
 		delete_event(fd, EPOLLOUT);
+		close(nwrite);
 	} else {
 		modify_event(fd, EPOLLIN);
 	}
@@ -91,7 +90,8 @@ void Epoll::delete_event(int fd, int state)const{
 	ev.data.fd = fd;
 	ev.events = state;
 	if(epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, &ev) == -1){
-		fprintf(stderr, "delete event fail!\n");
+		// fprintf(stderr, "delete event fail!\n");
+		perror("delete event fail");
 	}
 }
 
